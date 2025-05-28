@@ -2,7 +2,7 @@
 seed = 42
 
 # logger
-logger_type = 'wandb'
+logger_type = "wandb"
 save_interval = 20000
 log_interval = 50
 
