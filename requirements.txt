@@ -10,3 +10,4 @@ uvicorn==0.34.2
 fastapi==0.115.12
 json_numpy==2.1.0
 transformers==4.51.3
+diffusers==0.33.1

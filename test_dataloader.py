@@ -1,12 +1,14 @@
 from datasets import create_engine
 from utils import check_dict_structure
 from models.encoders.DecisionNCE import DecisionNCE
- 
-train_dataloader, _ = create_engine('build_libero_engine', dataset_path = 'assets/data/libero')
+from tqdm import tqdm 
+
+train_dataloader, _ = create_engine('build_libero_engine', dataset_path = 'assets/data/libero', batch_size=128)
 
 model = DecisionNCE()
 
-for batch in train_dataloader:
+
+for batch in tqdm(train_dataloader):
     check_dict_structure(batch)
     break
     # visual_input = batch['cur_images'][:,0,...]

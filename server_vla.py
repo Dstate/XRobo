@@ -21,7 +21,7 @@ def main(path, ckpt_name, strict_load=True, host="0.0.0.0", port=8000):
 if __name__ == '__main__':
     device_id = 7
     port = 8989 + device_id
-    path = "runnings/bc_ddpm-libero_10"
+    path = "runnings/bc_ddpm-libero_130"
     ckpt_name = "Model_ckpt_200000"
     torch.cuda.set_device(device_id)
     main(path, ckpt_name, False, "0.0.0.0", port)

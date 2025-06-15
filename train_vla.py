@@ -44,11 +44,14 @@ def train(config, logger, model, train_loader, optimizer, lr_scheduler):
         loss, loss_metric = model(**batch)
         optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         lr_scheduler.step()
-        loss_recod.update(loss)
         
         # log training message
+        loss_recod.update(loss.detach().cpu().item())
+        loss_metric = {k: (v.detach().cpu().item() if isinstance(v, torch.Tensor) else v)
+                       for k, v in loss_metric.items()}
         loss_metric.update({'iter': ep_iter,
                             'smoothed_loss': loss_recod.avg,
                             'lr': lr_scheduler.get_last_lr()[0]})
