@@ -27,6 +27,8 @@ class CalvinDataset(Dataset):
         traj_paths = dataset_statistics['traj_paths']
         traj_lens = dataset_statistics['traj_lens']
         self.views = dataset_statistics['views']
+        self.action_key = dataset_statistics['action_key']
+        self.proprio_key = dataset_statistics['proprio_key']
         self.main_view = self.views[0]
         self.metas = []
         for i in range(len(traj_paths)):
@@ -45,13 +47,13 @@ class CalvinDataset(Dataset):
                 raw_img = cv2.imdecode(f['observation'][view][goal_idx], cv2.IMREAD_COLOR)
                 goal_images.append(raw_img)
             # load actions with chunking
-            np_action = f['rel_action'][()][cur_idx : cur_idx + self.chunk_length]
+            np_action = f[self.action_key][()][cur_idx : cur_idx + self.chunk_length]
             if len(np_action) < self.chunk_length:
                 cnt = self.chunk_length - len(np_action)
                 padding = np.array([[0., 0., 0., 0., 0., 0., np_action[-1][-1]]]).repeat(cnt, axis=0)
                 np_action = np.concatenate([np_action, padding], axis=0)
             # load proprio
-            raw_proprio = f['proprio'][()][cur_idx]
+            raw_proprio = f[self.proprio_key][()][cur_idx]
             # load instruction
             instruction = f['language_instruction'][()].decode('utf-8')
         return raw_images, goal_images, np_action, raw_proprio, instruction
@@ -63,12 +65,12 @@ class CalvinDataset(Dataset):
         meta = self.metas[index]
         raw_images, goal_images, np_action, raw_proprio, instruction = self._load_from_raw_traj(meta[0], meta[1], meta[2]-1)
         final_images = torch.stack([self.processor.preprocess_image(img)[0] for img in raw_images])
-        goal_images = torch.stack([self.processor.preprocess_image(img)[0] for img in goal_images])
+        # goal_images = torch.stack([self.processor.preprocess_image(img)[0] for img in goal_images])
         final_action = self.processor.preprocess_action(np_action) # 42
         final_proprio = self.processor.preprocess_proprio(raw_proprio)
         item = {
             'cur_images': final_images,
-            'goal_images': goal_images,
+            # 'goal_images': goal_images,
             'cur_actions': final_action,
             'cur_proprios': final_proprio,
             'instruction': instruction,
@@ -187,7 +189,7 @@ def build_calvin_agent(processor, use_ac=True):
     agent = CalvinAgent(processor, use_ac)
     return agent
 
-def build_calvin_engine(dataset_path, processor_type='base', img_size=224, # processor
+def build_calvin_engine(dataset_path, processor_type='base_color', img_size=224, # processor
                         chunk_length=6, batch_size=2, num_workers=2, # dataloader
                         shuffle=True, pin_mem=True, drop_last=True, # dataloader
                         world_size=1, global_rank=0, # dataloader

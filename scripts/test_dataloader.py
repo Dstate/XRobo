@@ -3,7 +3,7 @@ from utils import check_dict_structure
 from models.encoders.DecisionNCE import DecisionNCE
 from tqdm import tqdm 
 
-train_dataloader, _ = create_engine('build_libero_engine', dataset_path = 'assets/data/libero', batch_size=128)
+train_dataloader, _ = create_engine('build_joint_dataloader', batch_size=8, chunk_length=6)
 
 model = DecisionNCE()
 

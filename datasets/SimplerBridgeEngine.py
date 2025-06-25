@@ -16,7 +16,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 
-class LiberoDataset(Dataset):
+class SimplerBridgeDataset(Dataset):
     def __init__(self, processor, chunk_length=6):
         self.processor = processor
         self.chunk_length = chunk_length
@@ -79,7 +79,7 @@ class LiberoDataset(Dataset):
         }
         return item
 
-class LiberoAgent(object):
+class SimplerBridgeAgent(object):
     def __init__(self, processor, use_ac = True):
         super().__init__()
         self.use_ac = use_ac
@@ -107,18 +107,16 @@ class LiberoAgent(object):
         actions[..., -1] = np.sign(actions[..., -1])
         return actions
     
-    def get_action(self, agent_view_images, wrist_view_images, raw_proprio, instruction, t=-1):
+    def get_action(self, third_image, raw_proprio, instruction, t=-1):
         # agent_view_images B H W 3
         # wrist_view_images B H W 3
         # raw_proprio B 9
         # instruction ['xxx', ..., 'xxx']
 
-        agent_view_images = torch.stack([self.processor.preprocess_image(image)[0] for image in agent_view_images]).unsqueeze(1)
-        wrist_view_images = torch.stack([self.processor.preprocess_image(image)[0] for image in wrist_view_images]).unsqueeze(1)
-        final_images = torch.cat([agent_view_images, wrist_view_images], dim=1)
+        third_image = torch.stack([self.processor.preprocess_image(image)[0] for image in third_image]).unsqueeze(1)
         final_proprio = torch.stack([self.processor.preprocess_proprio(proprio) for proprio in raw_proprio])
         batch = {
-            'cur_images': final_images,
+            'cur_images': third_image,
             'cur_proprios': final_proprio,
             'instruction': instruction,
         }
@@ -142,15 +140,14 @@ class LiberoAgent(object):
         # t 0
         print('recieve a request')
         try:    
-            agent_view_images = json_numpy.loads(payload["agent_view_images"])
-            wrist_view_images = json_numpy.loads(payload["wrist_view_images"])
+            third_image = json_numpy.loads(payload["third_image"])
             raw_proprio = json_numpy.loads(payload["proprio"])
             instruction, eval_horizon, t = payload['instruction'], payload['eval_horizon'], payload['t']
 
             if t == 0:
-                self._init_action_chunking(eval_horizon, agent_view_images.shape[0])
+                self._init_action_chunking(eval_horizon, third_image.shape[0])
 
-            pred_action = self.get_action(agent_view_images, wrist_view_images, raw_proprio, instruction, t)
+            pred_action = self.get_action(third_image, raw_proprio, instruction, t)
             return JSONResponse(content={
                 "pred_action": pred_action.tolist()
             })
@@ -175,21 +172,21 @@ class LiberoAgent(object):
         uvicorn.run(self.app, host=host, port=port)
 
 
-def build_libero_dataloader(processor, chunk_length=6,
+def build_simpler_bridge_dataloader(processor, chunk_length=6,
                         batch_size=2, num_workers=2, shuffle=True, pin_mem=True, drop_last=True, 
                         world_size=1, global_rank=0):
     
-    train_dataset = LiberoDataset(processor=processor, chunk_length=chunk_length)
+    train_dataset = SimplerBridgeDataset(processor=processor, chunk_length=chunk_length)
     sampler = DistributedSampler(train_dataset, shuffle=shuffle, num_replicas=world_size, rank=global_rank) 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers,
                                  sampler=sampler, pin_memory=pin_mem, drop_last=drop_last)
     return train_dataloader
 
-def build_libero_agent(processor, use_ac=True):
-    agent = LiberoAgent(processor, use_ac)
+def build_simpler_bridge_agent(processor, use_ac=True):
+    agent = SimplerBridgeAgent(processor, use_ac)
     return agent
 
-def build_libero_engine(dataset_path, processor_type='base', img_size=224, # processor
+def build_simpler_bridge_engine(dataset_path, processor_type='base_color', img_size=224, # processor
                         chunk_length=6, batch_size=2, num_workers=2, # dataloader
                         shuffle=True, pin_mem=True, drop_last=True, # dataloader
                         world_size=1, global_rank=0, # dataloader
@@ -197,10 +194,10 @@ def build_libero_engine(dataset_path, processor_type='base', img_size=224, # pro
                         **kwargs):
     
     processor = build_base_processor(dataset_path, processor_type=processor_type, img_size=img_size, training=True)
-    train_dataloader = build_libero_dataloader(processor=processor, chunk_length=chunk_length,
+    train_dataloader = build_simpler_bridge_dataloader(processor=processor, chunk_length=chunk_length,
                                                batch_size=batch_size, num_workers=num_workers, 
                                                shuffle=shuffle, pin_mem=pin_mem, drop_last=drop_last, 
                                                world_size=world_size, global_rank=global_rank)
     processor = build_base_processor(dataset_path, processor_type=processor_type, img_size=img_size, training=False)
-    agent = build_libero_agent(processor=processor, use_ac=use_ac)
+    agent = build_simpler_bridge_agent(processor=processor, use_ac=use_ac)
     return train_dataloader, agent

@@ -4,7 +4,7 @@ logger_type = "tensorboard"
 # data engine
 engine_name = "build_calvin_engine"
 dataset_path = "assets/data/calvin"
-processor_type = 'base'
+processor_type = 'base_color'
 shuffle=True
 pin_mem=True
 drop_last=True
