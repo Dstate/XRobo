@@ -25,9 +25,7 @@ pip install -r requirements.txt
 
 ### Dataset Preprocessing
 1. Prepare datasets.
-We save each trajectory as a HDF5 file.
-
-You can link your dataset to the repo directory:
+We save each trajectory as a HDF5 file. You can link your dataset to the repo directory:
 
 ```bash
 mkdir -p assets/data
@@ -35,9 +33,7 @@ ln -s path/to/datasets assets/data/
 ```
 
 2. Generate meta information of datasets.
-Before training, you should generate meta information first, such as `action_max`, `action_min`, `proprio_max`, etc.
-
-An example is as follows. `statistics_calc.py` will generate a meta file in the dataset path.
+Before training, you should generate meta information first, such as `action_max`, `action_min`, `proprio_max`, etc. An example is as follows. `statistics_calc.py` will generate a meta file in the dataset path.
 ```bash
 python statistics_calc.py --dataset_root assets/data/libero
 ```
