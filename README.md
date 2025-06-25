@@ -42,3 +42,10 @@ python statistics_calc.py --dataset_root assets/data/libero
 bash scripts/bc_ddpm-libero.sh # Training
 python server_vla.py # Inference
 ```
+
+### Tools
+
+```bash
+python scripts/test_dataloader.py # check the structure of dataloader
+python scripts/test_client.py # check the vla server
+```
