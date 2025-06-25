@@ -11,9 +11,7 @@ pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https
 ```
 
 2. Install flash-attn module.
-Based on the current environment configuration, you should download `flash_attn-2.7.1.post4+cu12torch2.6cxx11abiFALSE-cp310-cp310-linux_x86_64.whl` from [FlashAttention](https://github.com/Dao-AILab/flash-attention/releases).
-
-After that, install the `.whl` file using pip.
+Based on the current environment, download the corresponding version from [FlashAttention](https://github.com/Dao-AILab/flash-attention/releases). After that, install the `.whl` file using pip.
 ```bash
 pip install ./flash_attn-2.7.1.post4+cu12torch2.6cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
 ```
