@@ -23,14 +23,15 @@ def print_item_details(data, depth=1):
     else :
         print(f"{indentation}data_value: {data}")
 
-def print_hdf5_details(group):
+def print_hdf5_details(group, depth=0):
+    indentation = '   ' * depth
     for key in group.keys():
         item = group[key]
         if isinstance(item, h5py.Group):
-            print(f"Group: {key}")
-            print_hdf5_details(item)  # 递归查看子组
+            print(f"{indentation}Group: {key}")
+            print_hdf5_details(item, depth+1)  # 递归查看子组
         else:
-            print(f"Dataset: {key} - Shape: {item.shape}, dtype: {item.dtype}")
+            print(f"{indentation}Dataset: {key} - Shape: {item.shape}, dtype: {item.dtype}")
 
 def load_pickle(file_path):
     file_size = osp.getsize(file_path)

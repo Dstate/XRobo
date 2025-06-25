@@ -46,7 +46,7 @@ def build_base_transform(n_px, aug=True, to_tensor=True, apply_norm=True,
     base_transform = A.ReplayCompose(base_transform)
     return base_transform
 
-class LiberoProcessor(object):
+class BaseProcessor(object):
     def __init__(self, dataset_path, img_transform):
         self.img_transform = img_transform
         dataset_statistics = build_dataset_statistics(dataset_path)
@@ -87,14 +87,14 @@ class LiberoProcessor(object):
         action = (action + 1) / 2 * (self.action_max - self.action_min) + self.action_min
         return action.numpy()
 
-def build_libero_processor(dataset_path, processor_type, img_size=224, training=True):
+def build_base_processor(dataset_path, processor_type, img_size=224, training=True):
     if processor_type == 'base':
         img_transform = build_base_transform(n_px=img_size, aug=training)
-        processor = LiberoProcessor(dataset_path, img_transform)
+        processor = BaseProcessor(dataset_path, img_transform)
         return processor
     elif processor_type == 'base_clip':
         img_transform = build_base_transform(n_px=img_size, aug=training)
-        processor = LiberoProcessor(dataset_path, img_transform,
+        processor = BaseProcessor(dataset_path, img_transform,
                         norm_mean = (0.48145466, 0.4578275, 0.40821073),
                         norm_std=(0.26862954, 0.26130258, 0.27577711))
         return processor

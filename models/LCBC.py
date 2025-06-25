@@ -116,3 +116,8 @@ def bc_policy_ddpm_res34_libero(chunk_length=6, **kwargs):
     latent_proj = DecisionNCE(model_path='assets/weights/DecisionNCE/DecisionNCE-RoboMutual')
     return BCPolicy(latent_proj, proprio_input_dim=9, proprio_hidden_dim=32, vision_backbone_name="resnet34", decoder_head='ddpm',
                     policy_num_blocks=3, policy_hidden_dim=256, action_size=7, chunk_length=chunk_length)
+
+def bc_policy_ddpm_res34_calvin(chunk_length=6, **kwargs):
+    latent_proj = DecisionNCE(model_path='assets/weights/DecisionNCE/DecisionNCE-RoboMutual')
+    return BCPolicy(latent_proj, proprio_input_dim=7, proprio_hidden_dim=32, vision_backbone_name="resnet34", decoder_head='ddpm',
+                    policy_num_blocks=3, policy_hidden_dim=256, action_size=7, chunk_length=chunk_length)

@@ -16,7 +16,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 
-class LiberoDataset(Dataset):
+class CalvinDataset(Dataset):
     def __init__(self, processor, chunk_length=6):
         self.processor = processor
         self.chunk_length = chunk_length
@@ -45,7 +45,7 @@ class LiberoDataset(Dataset):
                 raw_img = cv2.imdecode(f['observation'][view][goal_idx], cv2.IMREAD_COLOR)
                 goal_images.append(raw_img)
             # load actions with chunking
-            np_action = f['action'][()][cur_idx : cur_idx + self.chunk_length]
+            np_action = f['rel_action'][()][cur_idx : cur_idx + self.chunk_length]
             if len(np_action) < self.chunk_length:
                 cnt = self.chunk_length - len(np_action)
                 padding = np.array([[0., 0., 0., 0., 0., 0., np_action[-1][-1]]]).repeat(cnt, axis=0)
@@ -77,7 +77,7 @@ class LiberoDataset(Dataset):
         }
         return item
 
-class LiberoAgent(object):
+class CalvinAgent(object):
     def __init__(self, processor, use_ac = True):
         super().__init__()
         self.use_ac = use_ac
@@ -140,8 +140,8 @@ class LiberoAgent(object):
         # t 0
         print('recieve a request')
         try:    
-            agent_view_images = json_numpy.loads(payload["agent_view_images"])
-            wrist_view_images = json_numpy.loads(payload["wrist_view_images"])
+            agent_view_images = json_numpy.loads(payload["third_image"])
+            wrist_view_images = json_numpy.loads(payload["wrist_image"])
             raw_proprio = json_numpy.loads(payload["proprio"])
             instruction, eval_horizon, t = payload['instruction'], payload['eval_horizon'], payload['t']
 
@@ -173,21 +173,21 @@ class LiberoAgent(object):
         uvicorn.run(self.app, host=host, port=port)
 
 
-def build_libero_dataloader(processor, chunk_length=6,
+def build_calvin_dataloader(processor, chunk_length=6,
                         batch_size=2, num_workers=2, shuffle=True, pin_mem=True, drop_last=True, 
                         world_size=1, global_rank=0):
     
-    train_dataset = LiberoDataset(processor=processor, chunk_length=chunk_length)
+    train_dataset = CalvinDataset(processor=processor, chunk_length=chunk_length)
     sampler = DistributedSampler(train_dataset, shuffle=shuffle, num_replicas=world_size, rank=global_rank) 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers,
                                  sampler=sampler, pin_memory=pin_mem, drop_last=drop_last)
     return train_dataloader
 
-def build_libero_agent(processor, use_ac=True):
-    agent = LiberoAgent(processor, use_ac)
+def build_calvin_agent(processor, use_ac=True):
+    agent = CalvinAgent(processor, use_ac)
     return agent
 
-def build_libero_engine(dataset_path, processor_type='base', img_size=224, # processor
+def build_calvin_engine(dataset_path, processor_type='base', img_size=224, # processor
                         chunk_length=6, batch_size=2, num_workers=2, # dataloader
                         shuffle=True, pin_mem=True, drop_last=True, # dataloader
                         world_size=1, global_rank=0, # dataloader
@@ -195,10 +195,10 @@ def build_libero_engine(dataset_path, processor_type='base', img_size=224, # pro
                         **kwargs):
     
     processor = build_base_processor(dataset_path, processor_type=processor_type, img_size=img_size, training=True)
-    train_dataloader = build_libero_dataloader(processor=processor, chunk_length=chunk_length,
+    train_dataloader = build_calvin_dataloader(processor=processor, chunk_length=chunk_length,
                                                batch_size=batch_size, num_workers=num_workers, 
                                                shuffle=shuffle, pin_mem=pin_mem, drop_last=drop_last, 
                                                world_size=world_size, global_rank=global_rank)
     processor = build_base_processor(dataset_path, processor_type=processor_type, img_size=img_size, training=False)
-    agent = build_libero_agent(processor=processor, use_ac=use_ac)
+    agent = build_calvin_agent(processor=processor, use_ac=use_ac)
     return train_dataloader, agent
