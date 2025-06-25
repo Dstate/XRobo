@@ -1,7 +1,5 @@
 # XRobo
 
-## Quick Start
-
 ### Installation
 
 1. Clone this repository and create an environment.
