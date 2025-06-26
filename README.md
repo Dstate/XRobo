@@ -27,7 +27,11 @@ We save each trajectory as a HDF5 file. You can link your dataset to the repo di
 
 ```bash
 mkdir -p assets/data
-ln -s path/to/datasets assets/data/
+ln -s /mnt/ssd0/data/calvin assets/data/calvin
+ln -s /mnt/ssd0/data/libero assets/data/libero
+ln -s /mnt/ssd1/data/HDP/bridge assets/data/simpler_bridge
+ln -s /mnt/ssd0/data/VLABench/processed assets/data/simpler_rt1
+
 ```
 
 2. Generate meta information of datasets.
